@@ -47,7 +47,7 @@ def drinks_details(payload):
 
 
 @app.route('/drinks', methods=['POST'])
-# @requires_auth('post:drinks')
+@requires_auth('post:drinks')
 def post_drinks():
 
     body = request.get_json()
