@@ -48,18 +48,18 @@ def drinks_details(payload):
 
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def post_drinks():
+def post_drinks(payload):
 
     body = request.get_json()
 
-    recipe = body["recipe"]
-    print(recipe)
-    drink = Drink(title=body['title'], recipe=json.dumps(recipe))
-    print("heereee", drink)
-    drink.insert()
+    try:
+        recipe = body["recipe"]
+        print(recipe)
+        drink = Drink(title=body['title'], recipe=json.dumps(recipe))
+        drink.insert()
 
-    """ except:
-        abort(400) """
+    except:
+        abort(400)
 
     return jsonify({
         "sucess": True,
