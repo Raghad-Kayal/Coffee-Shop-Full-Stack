@@ -35,15 +35,18 @@ def show_drinks():
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
 def drinks_details(payload):
-    drinks = Drink.query.all()
-    data = []
-    for drink in drinks:
-        data.append(drink.long())
+    try:
+        drinks = Drink.query.all()
+        data = []
+        for drink in drinks:
+            data.append(drink.long())
+    except:
+        abort(401)
 
     return jsonify({
         "success": True,
         "drinks": data
-    }), 200
+    })
 
 
 @app.route('/drinks', methods=['POST'])
@@ -56,6 +59,7 @@ def post_drinks(payload):
         recipe = body["recipe"]
         print(recipe)
         drink = Drink(title=body['title'], recipe=json.dumps(recipe))
+
         drink.insert()
 
     except:
@@ -146,11 +150,10 @@ def bad_request(error):
     }), 400
 
 
-@ app.errorhandler(AuthError)
-def Auth_Error(error):
-
+@ app.errorhandler(401)
+def autherror(error):
     return jsonify({
         "success": False,
-        "error": AuthError,
-        "message": "authrization error"
-    }), AuthError
+        'error': 401,
+        "message": "autherror"
+    }), 401

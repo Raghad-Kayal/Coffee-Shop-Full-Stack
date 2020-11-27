@@ -3,9 +3,9 @@ from flask import request, _request_ctx_stack, abort
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
+import sys
 
 
-#AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
 AUTH0_DOMAIN = 'fsndcoffeshop.us.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'shop'
@@ -25,24 +25,19 @@ class AuthError(Exception):
 
 # Auth Header
 
-
 def get_token_auth_header():
-
-    # get the header from the request
+    """Obtains the Access Token from the Authorization Header
+    """
     auth = request.headers.get('Authorization', None)
 
-    # raise an AuthError if no header is present
     if not auth:
+
         raise AuthError({
             'code': 'authorization_header_missing',
             'description': 'Authorization header is expected.'
         }, 401)
 
-    # split bearer and the token
-
     parts = auth.split()
-
-    # raise an AuthError if the header is malformed
     if parts[0].lower() != 'bearer':
         raise AuthError({
             'code': 'invalid_header',
@@ -65,27 +60,10 @@ def get_token_auth_header():
     return token
 
 
-def check_permissions(permission, payload):
-    if 'permissions' not in payload:
-        raise AuthError({
-            'code': 'permission_error',
-            'description': 'permissions should be included in the payload'
-        }, 400)
-
-    if permission not in payload['permissions']:
-        raise AuthError({
-            'code': 'permission_error',
-            'description': 'YOU ARE NOT ALLOWED TO DO THIS!'
-        }, 403)
-
-    return True
-
-
 def verify_decode_jwt(token):
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
-
     rsa_key = {}
     if 'kid' not in unverified_header:
         raise AuthError({
@@ -136,14 +114,30 @@ def verify_decode_jwt(token):
     }, 400)
 
 
+def check_permissions(permission, payload):
+    if 'permissions' not in payload:
+        print("her")
+        raise AuthError({
+            'code': 'permission_error',
+            'description': 'permissions should be included in the payload'
+        }, 400)
+
+    if permission not in payload['permissions']:
+        raise AuthError({
+            'code': 'permission_error',
+            'description': 'YOU ARE NOT ALLOWED TO DO THIS!'
+        }, 403)
+
+    return True
+
+
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
-
+            breakpoint
             payload = verify_decode_jwt(token)
-            print(payload)
             check_permissions(permission, payload)
             return f(payload, *args, **kwargs)
 
